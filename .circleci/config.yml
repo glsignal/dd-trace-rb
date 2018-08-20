@@ -1,12 +1,12 @@
 # Common variables, containers, jobs and steps.
 job_defaults: &job_defaults
-  working_directory: /app
+  working_directory: ~/app
   shell: /bin/bash --login
 
 ruby_containers: &ruby_containers
   - &container_defaults
       environment:
-        - BUNDLE_GEMFILE=/app/Gemfile
+        - BUNDLE_GEMFILE=~/app/Gemfile
   - &container-1_9
     <<: [ image: 'datadog/docker-library:ddtrace_rb_1_9_3', *container_defaults ]
   - &container-2_0
@@ -52,7 +52,7 @@ version: 2.0
 
 job_aliases:
   - &default_workspace
-      at: /app
+      at: ~/app
   - &docker_test_environment
       environment:
         - TEST_DATADOG_INTEGRATION: 1
@@ -61,7 +61,7 @@ job_aliases:
       command: bundle --path vendor/bundle
   - &build_files
       root: .
-      key: 'betav7-bundle-{{ .Environment.CIRCLE_JOB }}-{{ checksum "Gemfile" }}-{{ checksum "ddtrace.gemspec" }}-{{ checksum "Appraisals" }}'
+      key: 'betav8-bundle-{{ .Environment.CIRCLE_JOB }}-{{ checksum "Gemfile" }}-{{ checksum "ddtrace.gemspec" }}-{{ checksum "Appraisals" }}'
       paths:
         - vendor/bundle
         - gemfiles/
@@ -335,4 +335,6 @@ workflows:
 #            - "(2/5) benchmark"
 #            - "(3/5) benchmark"
 #            - "(4/5) benchmark"
+
+
 #            - "(5/5) benchmark"
