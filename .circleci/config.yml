@@ -257,10 +257,12 @@ workflows:
   version: 2
   benchmark:
     jobs:
-      - "(2.3) build":
+      - "perform additional tests":
           <<: *default_workflow
           type: approval
-          requires: [ "(2.3) build" ]
+      - "(2.3) build":
+          <<: *default_workflow
+          requires: [ "perform additional tests" ]
       - "(1/2) benchmark": &benchmark_workflow
           <<: *default_workflow
           requires: [ "(2.3) build" ]
