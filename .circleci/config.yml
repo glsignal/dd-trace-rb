@@ -267,6 +267,10 @@ wf_aliases:
         ignore: /.*/
       tags:
         only: /^v\d+(\.\d+){0,3}(\.(alpha|beta|rc)\d+)?$/
+  - &only_on_master
+    filters:
+      branches:
+        only: master
   - &default_workflow
     <<: *filters_all_branches_and_tags
 
@@ -275,23 +279,23 @@ workflows:
   "baseline benchmark":
     jobs:
       - "(2.3) build":
-          <<: *default_workflow
+          <<: *only_on_master
       - "benchmark baseline":
-          <<: *default_workflow
+          <<: *only_on_master
           type: approval
           requires: [ "(2.3) build" ]
       - "build baseline":
-          <<: *default_workflow
+          <<: *only_on_master
           requires: [ "benchmark baseline" ]
       - "(1/5) benchmark": &benchmark_workflow
-          <<: *default_workflow
+          <<: *only_on_master
           requires: [ "build baseline" ]
       - "(2/5) benchmark": *benchmark_workflow
       - "(3/5) benchmark": *benchmark_workflow
       - "(4/5) benchmark": *benchmark_workflow
       - "(5/5) benchmark": *benchmark_workflow
       - "aggregate benchmarks":
-          <<: *default_workflow
+          <<: *only_on_master
           requires:
             - "(1/5) benchmark"
             - "(2/5) benchmark"
@@ -316,7 +320,6 @@ workflows:
       - "deploy release":
           <<: *filters_only_release_tags
           requires:
-            - "(2.3) build"
             - "(1.9) test"
             - "(2.0) test"
             - "(2.1) test"
