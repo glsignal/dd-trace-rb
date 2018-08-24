@@ -6,18 +6,19 @@ module TestConfiguration
   module_function
 
   def iteration_count
-    200000
+    20000
   end
 end
 
 require 'bundler/setup'
+require 'ddtrace'
 require 'concurrent/atomic/atomic_fixnum'
 
 # approximate operations
 class TestWithoutDatadog
   def perform(iterations = 100)
     iterations.times do
-      (proc {nil}).call
+      (proc { sleep(0.001) }).call
     end
   end
 end
@@ -25,9 +26,12 @@ end
 # real test
 class Test
   def perform(iterations = 100)
+
     iterations.times do
-      Datadog.tracer.trace('test') do
-        Datadog.tracer.trace('test_inner') {}
+      Datadog.tracer.trace('test', service: 'test') do
+        Datadog.tracer.trace('test_inner', service: 'test') do
+          sleep(0.001)
+        end
       end
     end
   end
@@ -98,8 +102,9 @@ if Datadog.respond_to?(:configure)
   Datadog.configure do |d|
     processor = Datadog::Pipeline::SpanProcessor.new do |span|
       true if span.service == 'B'
-      true
+
     end
+    d.use :http
 
     Datadog::Pipeline.before_flush(processor)
   end
@@ -137,6 +142,6 @@ batch_runner.prepare
 
 wait_and_measure(TestConfiguration.iteration_count, batch_runner) do
   batch_runner.await
-  Datadog.tracer.shutdown if Datadog.respond_to?(:configure)
+  Datadog.tracer.shutdown! if Datadog.respond_to?(:configure)
 end
 
