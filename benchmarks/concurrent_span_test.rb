@@ -6,7 +6,7 @@ module TestConfiguration
   module_function
 
   def iteration_count
-    20000
+    10000
   end
 end
 
