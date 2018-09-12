@@ -61,7 +61,7 @@ job_aliases:
       command: bundle --path vendor/bundle
   - &build_files
       root: .
-      key: '{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ .Environment.CACHE_BUSTER }}-v1-bundle-{{ .Environment.CIRCLE_JOB }}-{{ checksum "Gemfile" }}-{{ checksum "ddtrace.gemspec" }}-{{ checksum "Appraisals" }}'
+      key: '{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ checksum ".cache_buster" }}-v1-bundle-{{ .Environment.CIRCLE_JOB }}-{{ checksum "Gemfile" }}-{{ checksum "ddtrace.gemspec" }}-{{ checksum "Appraisals" }}'
       paths:
         - vendor/bundle
         - gemfiles/
@@ -97,9 +97,9 @@ job_aliases:
             # cache build files per commit sha for at most 1 day
             export CACHE_BUSTER="${DAYS_SINCE_EPOCH}-${CIRCLE_SHA1}"
             [[ $CIRCLE_BRANCH =~ .*fast_ci$ ]] && CACHE_BUSTER=cached
-            [[ "$(git log --format=%B -n 1)" =~ "\[fast ci\]" ]] && export CACHE_BUSTER=cached
-            [[ "$(git log --format=%B -n 1)" =~ "\[skip ci cache\]" ]] && export CACHE_BUSTER="${CACHE_BUSTER}-${RANDOM}"
-            echo CACHE_BUSTER=$CACHE_BUSTER
+            [[ "$(git log --format=%B -n 1)" =~ '[fast ci]' ]] && export CACHE_BUSTER=cached
+            [[ "$(git log --format=%B -n 1)" =~ '[skip ci cache]' ]] && export CACHE_BUSTER="${CACHE_BUSTER}-${RANDOM}"
+            echo CACHE_BUSTER=$CACHE_BUSTER | tee .cache_buster
       - attach_workspace: *default_workspace
       - restore_cache: *build_files
       - run: *bundler_init
